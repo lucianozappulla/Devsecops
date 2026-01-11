@@ -1,0 +1,96 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Storage (S3), Notifications (SNS) and Queues (SQS)
+
+Resources:
+  # S3 Bucket for Artifacts and Reports
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      # BucketName: !Sub devsecops-artifacts-${AWS::AccountId}-${AWS::Region} 
+      # Avoid hardcoding name if possible in CFN to prevent collision or circular deps, 
+      # but Brief asks for specific name pattern.
+      BucketName: !Sub devsecops-artifacts-${AWS::AccountId}-${AWS::Region}
+      VersioningConfiguration:
+        Status: Suspended
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  # SNS Topic for Notifications
+  PipelineNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: devsecops-notifications
+      DisplayName: DevSecOps Pipeline Notifications
+
+  # Pipeline Notification Topic Policy
+  PipelineNotificationTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref PipelineNotificationTopic
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+                - codestarnotifications.amazonaws.com
+                - codebuild.amazonaws.com
+                - codepipeline.amazonaws.com
+            Action: sns:Publish
+            Resource: !Ref PipelineNotificationTopic
+
+  # SQS Queue (Optional as per brief, but requested)
+  PipelineEventsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: devsecops-pipeline-events
+      VisibilityTimeout: 30
+      MessageRetentionPeriod: 345600 # 4 days
+
+  # Subscribe SQS to SNS
+  SnsToSqsSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref PipelineNotificationTopic
+      Endpoint: !GetAtt PipelineEventsQueue.Arn
+      Protocol: sqs
+
+  # SQS Policy to allow SNS
+  SqsPolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref PipelineEventsQueue
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sns.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt PipelineEventsQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Ref PipelineNotificationTopic
+
+Outputs:
+  ArtifactBucketName:
+    Value: !Ref ArtifactBucket
+    Export:
+      Name: DevSecOps-ArtifactBucketName
+  ArtifactBucketArn:
+    Value: !GetAtt ArtifactBucket.Arn
+    Export:
+      Name: DevSecOps-ArtifactBucketArn
+  SnsTopicArn:
+    Value: !Ref PipelineNotificationTopic
+    Export:
+      Name: DevSecOps-SnsTopicArn

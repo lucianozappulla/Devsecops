@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Shared parameters for DevSecOps Demo
+
+Outputs:
+  ProjectName:
+    Value: devsecops-demo
+    Export:
+      Name: DevSecOps-ProjectName
+  
+  ResourcePrefix:
+    Value: DevSecOps-
+    Export:
+      Name: DevSecOps-ResourcePrefix
+
+  VpcCidr:
+    Value: 10.0.0.0/16
+    Export:
+      Name: DevSecOps-VpcCidr
+
+  ClusterName:
+    Value: devsecops-cluster
+    Export:
+      Name: DevSecOps-ClusterName
+      
+  CognitoDomainPrefix:
+    # IMPORTANT: This must be globally unique. Using a randomization or specific name
+    # For demo we will assume user changes this or we append random string in scripts
+    # But here we export the base name
+    Value: devsecops-demo-auth
+    Export:
+      Name: DevSecOps-CognitoDomainPrefix

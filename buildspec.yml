@@ -1,0 +1,62 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.11
+    commands:
+      - echo "Installing dependencies..."
+      - pip install semgrep checkov
+      - echo "Installing Trivy..."
+      - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+      - echo "Logging in to Amazon ECR..."
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+
+  pre_build:
+    commands:
+      - echo "Run Unit Tests..."
+      - cd app && pip install -r requirements.txt && pytest tests/ -v || exit 1
+      - cd ..
+      
+      - echo "Run Semgrep SAST..."
+      - semgrep --config=p/owasp-top-ten --json -o semgrep-report.json app/src/
+      # If critical issues found, you can fail build: grep -q "CRITICAL" semgrep-report.json && exit 1 || true
+
+      - echo "Run Checkov IaC Scan..."
+      - checkov --framework cloudformation --directory iac/ --output json > checkov-report.json || true
+      # Note: Checkov returns exit code > 0 on failure. We allow it to pass for demo or check thresholds.
+      # To fail on error: remove || true
+
+  build:
+    commands:
+      - echo "Build started on `date`"
+      - echo "Building the Docker image..."
+      - docker build -t $IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION -f app/Dockerfile app/
+      - docker tag $IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION
+      - docker tag $IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      
+      - echo "Run Trivy Container Scan..."
+      - trivy image --severity HIGH,CRITICAL --format json -o trivy-report.json $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION
+      # To fail on critical: trivy image --exit-code 1 --severity CRITICAL ...
+
+  post_build:
+    commands:
+      - echo "Build completed on `date`"
+      - echo "Pushing the Docker image..."
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      
+      - echo "Uploading Reports to S3..."
+      - aws s3 cp semgrep-report.json s3://$ARTIFACT_BUCKET/reports/semgrep/
+      - aws s3 cp checkov-report.json s3://$ARTIFACT_BUCKET/reports/checkov/
+      - aws s3 cp trivy-report.json s3://$ARTIFACT_BUCKET/reports/trivy/
+      
+      - echo "Writing image definitions file..."
+      - printf '[{"name":"devsecops-app","imageUri":"%s"}]' $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION > imagedefinitions.json
+      
+      - echo "Sending Notification..."
+      - aws sns publish --topic-arn $SNS_TOPIC_ARN --message "Build SUCCESS: commit $CODEBUILD_RESOLVED_SOURCE_VERSION"
+
+artifacts:
+  files:
+    - imagedefinitions.json
