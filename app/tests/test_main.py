@@ -26,7 +26,13 @@ def test_profile_authorized(client):
     # Yes: if not oidc_data and not app.config.get('TESTING'): ...
     # So with TESTING=True, it proceeds.
     
-    response = client.get('/profile')
+    # Simulate OIDC headers from ALB
+    headers = {
+        'x-amzn-oidc-data': 'mock-jwt-token',
+        'x-amzn-oidc-email': 'user@example.com',
+        'x-amzn-oidc-name': 'John Doe'
+    }
+    response = client.get('/profile', headers=headers)
     # Because of the logic I wrote:
     # if not oidc_data and not app.config.get('TESTING'): -> False because config['TESTING'] is True
     # -> It falls through to `if oidc_data:` check (which is False)
