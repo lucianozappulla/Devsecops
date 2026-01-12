@@ -2,7 +2,7 @@ import logging
 import sys
 import json
 from datetime import datetime, timezone
-from flask import Flask, jsonify, request, g, redirect
+from flask import Flask, jsonify, request, g, redirect, render_template
 
 # Configure logging to stdout (CloudWatch friendly)
 logging.basicConfig(
@@ -47,7 +47,7 @@ def create_app(config_class=Config):
                 "email": "demo@example.com",
                 "name": "Demo User (No HTTPS)"
             }
-            return jsonify(user_info), 200
+            return render_template('index.html', user=user_info)
             
         # Simulating extraction of claims. In real app, decode JWT.
         user_info = {
@@ -57,7 +57,7 @@ def create_app(config_class=Config):
         }
         
         logger.info("Authenticated request received")
-        return jsonify(user_info), 200
+        return render_template('index.html', user=user_info)
 
     @app.route('/orders', methods=['POST'])
     def create_order():

@@ -6,10 +6,11 @@ def test_health_check(client):
     assert response.json['status'] == 'healthy'
 
 def test_profile_demo_mode(client):
-    """Test accessing profile without authentication (Demo Mode)"""
+    """Test accessing profile without authentication (Demo Mode) - HTML Check"""
     response = client.get('/profile')
     assert response.status_code == 200
-    assert response.json['name'] == 'Demo User (No HTTPS)'
+    # Check for HTML content presence
+    assert b"Demo User (No HTTPS)" in response.data
 
 def test_profile_authorized(client):
     """Test accessing profile with mocked header (enabled in TestConfig/main logic if implemented, or just checking bypass)"""
