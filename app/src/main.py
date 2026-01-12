@@ -37,29 +37,26 @@ def create_app(config_class=Config):
         # In a real ALB+Cognito setup, x-amzn-oidc-data contains the JWT
         # For this demo, check if header exists or user claims are present
         
-        # NOTE: In a real scenario you would verify the signature of JWT in x-amzn-oidc-data
-        # For simplicity in this demo, we check for presence or a simulated header
-        
-        # ALB passes these headers after successful authentication
         oidc_data = request.headers.get('x-amzn-oidc-data')
         
-        if not oidc_data and not app.config.get('TESTING'):
-            # In testing we might bypass this or mock it, but if live and missing header -> 401
-            logger.warning("Unauthorized access attempt to /profile")
-            return jsonify({"error": "Unauthorized"}), 401
+        # DEMO MODE: If no auth header, assume Demo User
+        if not oidc_data:
+            logger.info("Missing Auth Header - Using Demo User")
+            user_info = {
+                "user_id": "demo-user-123",
+                "email": "demo@example.com",
+                "name": "Demo User (No HTTPS)"
+            }
+            return jsonify(user_info), 200
             
         # Simulating extraction of claims. In real app, decode JWT.
-        # Here we mock return values if it's a test or assuming ALB passed legitimate format
         user_info = {
             "user_id": "mock-user-id",
             "email": request.headers.get('x-amzn-oidc-email', 'user@example.com'),
             "name": request.headers.get('x-amzn-oidc-name', 'John Doe')
         }
         
-        if oidc_data:
-             # Just showing we acknowledged the auth header
-             logger.info("Authenticated request received")
-
+        logger.info("Authenticated request received")
         return jsonify(user_info), 200
 
     @app.route('/orders', methods=['POST'])
@@ -67,8 +64,10 @@ def create_app(config_class=Config):
         """Protected orders endpoint"""
         # Reuse same auth logic for demo
         oidc_data = request.headers.get('x-amzn-oidc-data')
-        if not oidc_data and not app.config.get('TESTING'):
-             return jsonify({"error": "Unauthorized"}), 401
+        
+        # DEMO MODE: Allow if no header
+        if not oidc_data:
+             logger.info("Create Order - Demo Mode")
 
         data = request.get_json()
         if not data:
