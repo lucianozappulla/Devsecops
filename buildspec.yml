@@ -15,7 +15,7 @@ phases:
   pre_build:
     commands:
       - echo "Run Unit Tests..."
-      - cd app && pip install -r requirements.txt && pytest tests/ -v || exit 1
+      - cd app && pip install -r requirements.txt && export PYTHONPATH=$PYTHONPATH:. && pytest tests/ -v || exit 1
       - cd ..
       
       - echo "Run Semgrep SAST..."
