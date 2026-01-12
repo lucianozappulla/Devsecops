@@ -2,7 +2,7 @@ import logging
 import sys
 import json
 from datetime import datetime, timezone
-from flask import Flask, jsonify, request, g
+from flask import Flask, jsonify, request, g, redirect
 
 # Configure logging to stdout (CloudWatch friendly)
 logging.basicConfig(
@@ -17,6 +17,11 @@ from src.config import Config
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    @app.route('/', methods=['GET'])
+    def index():
+        """Root endpoint - redirect to profile (auth)"""
+        return redirect('/profile')
 
     @app.route('/health', methods=['GET'])
     def health_check():
