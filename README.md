@@ -71,3 +71,5 @@ To remove all resources and avoid costs:
 1. Delete the files in the S3 Artifact Bucket.
 2. Delete the ECR images.
 3. Delete stacks in reverse order (Pipeline -> ECS -> Cognito -> Storage -> Network).
+ 
+# Updated at 12/01/2026 09:57:13
