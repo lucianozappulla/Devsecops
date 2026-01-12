@@ -55,7 +55,7 @@ phases:
       - printf '[{"name":"devsecops-app","imageUri":"%s"}]' $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION > imagedefinitions.json
       
       - echo "Sending Notification..."
-      - aws sns publish --topic-arn $SNS_TOPIC_ARN --message "Build SUCCESS: commit $CODEBUILD_RESOLVED_SOURCE_VERSION"
+      - 'aws sns publish --topic-arn $SNS_TOPIC_ARN --message "Build SUCCESS: commit $CODEBUILD_RESOLVED_SOURCE_VERSION"'
 
 artifacts:
   files:
