@@ -51,6 +51,11 @@ phases:
       - aws s3 cp checkov-report.json s3://$ARTIFACT_BUCKET/reports/checkov/
       - aws s3 cp trivy-report.json s3://$ARTIFACT_BUCKET/reports/trivy/
       
+      - echo "Generating HTML Report..."
+      - python scripts/generate_report.py
+      - echo "Uploading HTML Report to S3..."
+      - aws s3 cp security-report.html s3://$ARTIFACT_BUCKET/reports/
+      
       - echo "Writing image definitions file..."
       - printf '[{"name":"devsecops-app","imageUri":"%s"}]' $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION > imagedefinitions.json
       
