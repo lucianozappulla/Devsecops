@@ -33,7 +33,8 @@ def test_profile_authorized(client):
     # -> return jsonify(user_info)
     
     assert response.status_code == 200
-    assert 'user_id' in response.json
+    # HTML response check
+    assert b"mock-user-id" in response.data
 
 def test_create_order_valid(client):
     payload = {"item": "Widget", "quantity": 5}
