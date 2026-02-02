@@ -18,8 +18,8 @@ This directory contains the CloudFormation templates to provision the AWS infras
 | `01-network.yml` | VPC, Subnets, Security Groups | None |
 | `02-cognito.yml` | User Pool, Client, Domain | 00-parameters |
 | `03-ecs.yml` | ECS Cluster, Service, Task Def, ALB | 01-network, 00-parameters |
-| `04-pipeline.yml` | CodePipeline, CodeBuild, ECR | 05-storage, 03-ecs (Cluster name) |
-| `05-storage-notifications.yml` | S3 Artifact Bucket, SNS Topic | None |
+| `04-pipeline.yml` | CodePipeline, CodeBuild, ECR, Notifications | 05-storage, 03-ecs (Cluster name) |
+| `05-storage-notifications.yml` | S3 Artifact Bucket, SNS Topic, SQS Queue | None |
 
 ## Deployment Order
 

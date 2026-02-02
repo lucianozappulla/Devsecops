@@ -10,6 +10,7 @@ It includes:
 - **Build & Scan**: AWS CodeBuild (Semgrep, Checkov, Trivy)
 - **Deploy**: AWS CodePipeline -> ECS Fargate
 - **Auth**: Amazon Cognito
+- **Notifications**: SNS & SQS
 - **Infrastructure**: CloudFormation (YAML)
 
 ## Prerequisities
