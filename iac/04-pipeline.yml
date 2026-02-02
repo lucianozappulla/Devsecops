@@ -211,9 +211,24 @@ Resources:
               InputArtifacts:
                 - Name: BuildOutput
               Configuration:
-                ClusterName: !ImportValue DevSecOps-ClusterName
+                ClusterName: devsecops-cluster
                 ServiceName: devsecops-app-service
                 FileName: imagedefinitions.json
+
+  # Notification Rule
+  PipelineNotificationRule:
+    Type: AWS::CodeStarNotifications::NotificationRule
+    Properties:
+      Name: devsecops-pipeline-rule
+      DetailType: FULL
+      Resource: !Sub "arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${Pipeline}"
+      EventTypeIds:
+        - codepipeline-pipeline-pipeline-execution-succeeded
+        - codepipeline-pipeline-pipeline-execution-failed
+        - codepipeline-pipeline-pipeline-execution-started
+      Targets:
+        - TargetType: SNS
+          TargetAddress: !ImportValue DevSecOps-SnsTopicArn
 
 Outputs:
   PipelineName:
