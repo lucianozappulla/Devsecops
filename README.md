@@ -12,6 +12,38 @@ It includes:
 - **Auth**: Amazon Cognito
 - **Infrastructure**: CloudFormation (YAML)
 
+## Technologies Used
+
+### Core Application
+- **Python 3.11**: Primary programming language.
+- **Flask**: Web framework for the application.
+- **Gunicorn**: WSGI HTTP Server.
+- **Docker**: Containerization.
+
+### Network & Infrastructure
+- **AWS CloudFormation**: Infrastructure as Code (IaC).
+- **Amazon ECS (Fargate)**: Serverless container compute.
+- **Application Load Balancer (ALB)**: Traffic distribution.
+- **Amazon VPC**: Isolated network environment.
+
+### CI/CD Pipeline
+- **AWS CodePipeline**: Orchestrates the build and deploy workflow.
+- **AWS CodeBuild**: Compiles, tests, and scans the code.
+- **Amazon ECR**: Container image registry.
+- **GitHub**: Source code repository.
+
+### Security
+- **Semgrep**: Static Application Security Testing (SAST).
+- **Checkov**: IaC security scanning.
+- **Trivy**: Container image vulnerability scanning.
+- **Amazon Cognito**: User authentication and management.
+- **AWS IAM**: Role-based access control.
+
+### Notifications & Storage
+- **Amazon SNS**: Notification service.
+- **Amazon SQS**: Message queuing.
+- **Amazon S3**: Artifact storage.
+
 ## Prerequisities
 
 1. **AWS Account** with permissions to create resources (VPC, ECS, IAM, etc).
