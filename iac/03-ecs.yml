@@ -94,23 +94,9 @@ Resources:
       Matcher:
         HttpCode: '200'
 
-  # Listener (HTTPS) - For demo we might fallback to HTTP if no cert, 
-  # BUT user asked for HTTPS + Cognito. Cognito requires HTTPS listener on ALB.
-  # Challenge: We don't have a valid cert ARN. Self-signed needs to be uploaded or ACM generated.
-  # Automation of ACM validation is hard in pure CFN without DNS.
-  # FALLBACK STRATEGY FOR DEMO: Use HTTP (80) but this breaks Cognito direct integration on ALB (requires HTTPS listeners).
-  # WAIT: The requirement says "Authenticate with Cognito ... Then forward". This is an HTTPS listener action.
-  # IF we cannot create a cert, we cannot simplify this.
-  # However, for a "working demo" without a real domain, generating a cert is tricky.
-  # Workaround: The prompt says "Certificate: self-signed oppure usa AWS Certificate Manager".
-  # I cannot generate a self-signed cert via CFN easily.
-  # I will assume the user has a certificate ARN or I will skip HTTPS enforcement and warn them.
-  # BUT, ALB Auth action IS ONLY SUPPORTED ON HTTPS.
-  # So I MUST assume a CertificateArn is passed or we break the requirement.
-  # I will add a Parameter for CertificateArn. If empty, the stack might fail or I make it conditional.
-  # Let's add CertificateArn parameter.
 
-  # Listener (HTTP) - Redirect to HTTPS or just serve for check
+
+  # Listener (HTTP)
   HttpListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -120,7 +106,7 @@ Resources:
       DefaultActions:
         - Type: forward
           TargetGroupArn: !Ref TargetGroup
-      # In real life, redirect to HTTPS.
+
 
   # ECS Service
   Service:
