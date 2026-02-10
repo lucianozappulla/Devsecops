@@ -3,9 +3,18 @@
 # PREREQUISITE: Configure AWS CLI with 'aws configure'
 # PREREQUISITE: Generate a GitHub OAuth Token (classic) with 'repo' and 'admin:repo_hook' scope
 
-REGION="eu-south-1"  # CHANGE THIS IF NEEDED
+REGION="eu-south-1"
 STACK_PREFIX="devsecops"
-GITHUB_TOKEN="CHANGE_ME_TO_YOUR_TOKEN" # Recommend passing this as env var or argument safely
+# Load secrets if present
+if [ -f "secrets.env" ]; then
+    source secrets.env
+fi
+
+# Ensure GITHUB_TOKEN is set
+if [ -z "$GITHUB_TOKEN" ] || [ "$GITHUB_TOKEN" == "CHANGE_ME_TO_YOUR_TOKEN" ]; then
+    echo "Error: GITHUB_TOKEN is not set. Please set it in secrets.env or export it."
+    exit 1
+fi
 
 echo "Deploying Stacks to region $REGION..."
 

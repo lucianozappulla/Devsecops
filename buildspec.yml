@@ -20,12 +20,11 @@ phases:
       
       - echo "Run Semgrep SAST..."
       - semgrep --config=p/owasp-top-ten --json -o semgrep-report.json app/src/
-      # If critical issues found, you can fail build: grep -q "CRITICAL" semgrep-report.json && exit 1 || true
+
 
       - echo "Run Checkov IaC Scan..."
       - checkov --framework cloudformation --directory iac/ --output json > checkov-report.json || true
-      # Note: Checkov returns exit code > 0 on failure. We allow it to pass for demo or check thresholds.
-      # To fail on error: remove || true
+
 
   build:
     commands:
@@ -37,7 +36,7 @@ phases:
       
       - echo "Run Trivy Container Scan..."
       - trivy image --severity HIGH,CRITICAL --format json -o trivy-report.json $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION
-      # To fail on critical: trivy image --exit-code 1 --severity CRITICAL ...
+
 
   post_build:
     commands:

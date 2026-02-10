@@ -23,9 +23,7 @@ Outputs:
       Name: DevSecOps-ClusterName
       
   CognitoDomainPrefix:
-    # IMPORTANT: This must be globally unique. Using a randomization or specific name
-    # For demo we will assume user changes this or we append random string in scripts
-    # But here we export the base name
+
     Value: devsecops-demo-auth
     Export:
       Name: DevSecOps-CognitoDomainPrefix

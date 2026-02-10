@@ -10,12 +10,12 @@ Parameters:
   GitHubOwner:
     Type: String
     Description: GitHub Repository Owner
-    Default: "my-user"
+    Default: "lucianozappulla"
 
   GitHubRepo:
     Type: String
     Description: GitHub Repository Name
-    Default: "devsecops-pipeline-demo"
+    Default: "Devsecops"
 
   GitHubBranch:
     Type: String
